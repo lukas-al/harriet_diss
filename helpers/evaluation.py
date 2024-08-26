@@ -49,7 +49,8 @@ class ModelWrapper:
         steps,
         X_test: Optional[pd.DataFrame] = None,
         y_test: Optional[pd.Series] = None,
-        X: Optional[pd.DataFrame] = None,
+        X_train: Optional[pd.DataFrame] = None,
+        y_train: Optional[pd.DataFrame] = None,
     ):
         if self.model_type == "autots":
             return self.model.predict(forecast_length=steps).forecast[
@@ -57,11 +58,13 @@ class ModelWrapper:
             ]
 
         if self.model_type == 'autoreg':
-            return self.model.predict(
+            fcst = self.model.predict(
                 exog_oos=X_test,
-                start=len(self.model.fittedvalues),
-                end=len(self.model.fittedvalues) + steps - 1
+                start=len(X_train),
+                end=len(X_train) + steps - 1
             )
+            
+            return fcst 
         
         if self.model_type == 'darts':
             darts_X_test = TimeSeries.from_dataframe(X_test) # type: ignore
@@ -115,6 +118,7 @@ class Evaluator:
             )
 
             if len(y_test) < forecast_horizon:
+                print("Skipping block due to insufficient Y")
                 continue
             
             # fit the model
@@ -126,10 +130,14 @@ class Evaluator:
                 X_test = pd.concat([lags_df, X_test], axis=0)
                 X_test = X_test.sort_index()
             
-            forecast = model.forecast(steps=forecast_horizon, X_test=X_test) # type: ignore
-            
+            forecast = model.forecast(steps=forecast_horizon, X_test=X_test, X_train=X_train) # type: ignore
             score = float(loss_function(y_test[:forecast_horizon], forecast))
-                        
+
+            # Prepend the final training real result to the forecast at the beginning
+            y_train_final = pd.Series(y_train.iloc[-1], index=[y_train.index[-1]])
+            forecast = pd.concat([y_train_final, forecast], axis=0)
+            forecast = forecast.sort_index()
+            
             predictions.append(forecast)
             
             scores.append(score)
