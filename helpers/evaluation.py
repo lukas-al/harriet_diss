@@ -5,6 +5,7 @@ from typing import Callable, Optional, Union, Dict, List
 from tqdm.auto import tqdm
 from statsmodels.tsa.ar_model import AutoReg, ar_select_order
 from darts import TimeSeries
+import torch
 
 class ModelWrapper:
     def __init__(self, model, model_type, target_column_name):
@@ -44,6 +45,19 @@ class ModelWrapper:
                 past_covariates=darts_X_train
             )
 
+        if self.model_type == 'darts_TiDE':
+            X_train = X_train.astype('float32')
+            y_train = y_train.astype('float32')
+            
+            darts_X_train = TimeSeries.from_dataframe(X_train)
+            darts_Y_train = TimeSeries.from_series(y_train)
+            
+            self.model.fit(
+                series=darts_Y_train,
+                past_covariates=darts_X_train
+            )
+            
+
     def forecast(
         self,
         steps,
@@ -71,6 +85,12 @@ class ModelWrapper:
             return self.model.predict(
                 n=steps,
                 past_covariates=darts_X_test
+            ).pd_series()
+            
+
+        if self.model_type == 'darts_TiDE':
+            return self.model.predict(
+                n=steps,
             ).pd_series()
         
         

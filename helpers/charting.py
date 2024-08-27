@@ -29,9 +29,9 @@ def hedgehog_plot(
     fig = sns.lineplot(target_series, ax=ax)
     
     for idx, (scores, preds) in enumerate(zip(model_results['scores'], model_results['predictions'])): 
-        if idx==5:
-            sns.lineplot(preds, color='red',ax=ax, alpha=1)
-            print(preds)
+        # if idx==5:
+        #     sns.lineplot(preds, color='red',ax=ax, alpha=1)
+        #     print(preds)
         
         sns.lineplot(preds, color='grey',ax=ax, alpha=0.33)
         
