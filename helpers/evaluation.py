@@ -23,15 +23,16 @@ class ModelWrapper:
             lags = ar_select_order(
                 endog=y_train,
                 exog=X_train,
-                maxlag=12,
-                trend='c'
+                maxlag=8,
+                trend='n'
             )
             
             model = AutoReg(
                 endog=y_train,
                 exog=X_train,
-                trend='c',
+                trend='n',
                 lags=lags.ar_lags
+                # lags=[1,2,3,4]
             ).fit()
             
             self.model = model
