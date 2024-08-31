@@ -1,4 +1,5 @@
 *.xlsx
+*.xlsm
 *.pyc
 .ruff_cache/
 darts_logs/
