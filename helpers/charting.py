@@ -36,10 +36,13 @@ def hedgehog_plot(
         sns.lineplot(preds, color='grey',ax=ax, alpha=0.33)
         
     ax.set_xlabel("Date")
-    ax.set_ylabel('Quarterly GDP growth')
     ax.set_title(title)
     
     if log_axis:
+        ax.set_ylabel('Quarterly GDP growth - symmetric logarithm scale')
         ax.set_yscale('symlog')
+    else:
+        ax.set_ylabel('Quarterly GDP growth')
+        
     
     return fig
